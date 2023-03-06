@@ -9,10 +9,13 @@ import org.dalesbred.result.EmptyResultException;
 import java.nio.file.*;
 import static spark.Spark.*;
 import spark.*;
+import static spark.Spark.secure;
  
 // mvn clean compile exec:java
+// curl --cacert "$(mkcert -CAROOT)/rootCA.pem" -d '{"username":"demo","password":"password"}' -H 'Content-Type: application/json' https://localhost:4567/users
 public class Main {
   public static void main(String... args) throws Exception {
+    secure("localhost.p12", "changeit", null, null);
     var datasource = JdbcConnectionPool.create(
         "jdbc:h2:mem:natter", "natter", "password");
     var database = Database.forDataSource(datasource);
@@ -23,9 +26,8 @@ public class Main {
     var rateLimiter = RateLimiter.create(2.0d);       
     var userController = new UserController(database);
     var spaceController = new SpaceController(database); 
+    var auditController = new AuditController(database);  
 
-    // ------------- BEFORE --------------
-    before(userController::authenticate);
     before((request, response) -> {
       if (!rateLimiter.tryAcquire()) {                
         response.header("Retry-After", "2");          
@@ -40,16 +42,14 @@ public class Main {
         ).toString());
       }
     }));
+    before(userController::authenticate);
+    before(auditController::auditRequestStart); 
+    before("/spaces", userController::requireAuthentication);
+    before("/spaces/:spaceId/messages", userController.requirePermission("POST", "w"));
+    before("/spaces/:spaceId/messages/*", userController.requirePermission("GET", "r"));
+    before("/spaces/:spaceId/members", userController.requirePermission("POST", "rwd"));
 
-    // ------------- ROUTES --------------
-    post("/users", userController::registerUser);
-    post("/spaces", spaceController::createSpace); 
- 
 
-     // ------------- AFTER --------------
-    after((request, response) -> {         
-      response.type("application/json");   
-    });
     afterAfter((request, response) -> {
       response.type("application/json;charset=utf-8");
       response.header("X-Content-Type-Options", "nosniff");
@@ -59,8 +59,16 @@ public class Main {
       response.header("Content-Security-Policy",
         "default-src 'none'; frame-ancestors 'none'; sandbox");
       response.header("Server", "");
+      response.header("Strict-Transport-Security", "max-age=30"); // "max-age=31536000");
     });
- 
+    afterAfter(auditController::auditRequestEnd);    
+
+    get("/logs", auditController::readAuditLog);
+    post("/users", userController::registerUser);
+    post("/spaces", spaceController::createSpace); 
+    post("/spaces", spaceController::createSpace);
+    post("/spaces/:spaceId/members", spaceController::addMember);
+
     internalServerError(new JSONObject()
       .put("error", "internal server error").toString());
     notFound(new JSONObject()
