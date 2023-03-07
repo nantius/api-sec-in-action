@@ -28,6 +28,8 @@ public class Main {
     var spaceController = new SpaceController(database); 
     var auditController = new AuditController(database);  
 
+    Spark.staticFiles.location("/public");
+
     before((request, response) -> {
       if (!rateLimiter.tryAcquire()) {                
         response.header("Retry-After", "2");          
