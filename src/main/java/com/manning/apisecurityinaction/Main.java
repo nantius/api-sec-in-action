@@ -2,6 +2,7 @@ package com.manning.apisecurityinaction;
 
 import com.google.common.util.concurrent.*;
 import com.manning.apisecurityinaction.controller.*;
+import com.manning.apisecurityinaction.token.*;
 import org.dalesbred.Database;
 import org.h2.jdbcx.JdbcConnectionPool;
 import org.json.*;
@@ -23,10 +24,13 @@ public class Main {
     datasource = JdbcConnectionPool.create("jdbc:h2:mem:natter", "natter_api_user", "password");    
     database = Database.forDataSource(datasource);
 
+    TokenStore tokenStore = new CookieTokenStore();
+
     var rateLimiter = RateLimiter.create(2.0d);       
     var userController = new UserController(database);
     var spaceController = new SpaceController(database); 
-    var auditController = new AuditController(database);  
+    var auditController = new AuditController(database); 
+    var tokenController = new TokenController(tokenStore);
 
     Spark.staticFiles.location("/public");
 
@@ -45,7 +49,9 @@ public class Main {
       }
     }));
     before(userController::authenticate);
+    before(tokenController::validateToken);
     before(auditController::auditRequestStart); 
+    before("/sessions", userController::requireAuthentication);
     before("/spaces", userController::requireAuthentication);
     before("/spaces/:spaceId/messages", userController.requirePermission("POST", "w"));
     before("/spaces/:spaceId/messages/*", userController.requirePermission("GET", "r"));
@@ -70,6 +76,8 @@ public class Main {
     post("/spaces", spaceController::createSpace); 
     post("/spaces", spaceController::createSpace);
     post("/spaces/:spaceId/members", spaceController::addMember);
+    post("/sessions", tokenController::login);
+    delete("/sessions", tokenController::logout);
 
     internalServerError(new JSONObject()
       .put("error", "internal server error").toString());

@@ -1,4 +1,8 @@
+/home/nantius/projetos/api-security-in-action/natter-api/src/main/java/com/manning/apisecurityinaction/token/Base64url.java
+/home/nantius/projetos/api-security-in-action/natter-api/src/main/java/com/manning/apisecurityinaction/token/TokenStore.java
 /home/nantius/projetos/api-security-in-action/natter-api/src/main/java/com/manning/apisecurityinaction/controller/AuditController.java
+/home/nantius/projetos/api-security-in-action/natter-api/src/main/java/com/manning/apisecurityinaction/controller/TokenController.java
 /home/nantius/projetos/api-security-in-action/natter-api/src/main/java/com/manning/apisecurityinaction/controller/UserController.java
 /home/nantius/projetos/api-security-in-action/natter-api/src/main/java/com/manning/apisecurityinaction/controller/SpaceController.java
+/home/nantius/projetos/api-security-in-action/natter-api/src/main/java/com/manning/apisecurityinaction/token/CookieTokenStore.java
 /home/nantius/projetos/api-security-in-action/natter-api/src/main/java/com/manning/apisecurityinaction/Main.java
