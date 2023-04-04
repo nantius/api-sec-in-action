@@ -80,6 +80,7 @@ public class UserController {
     if (request.attribute("subject") == null) {
       // response.header("WWW-Authenticate",
       //     "Basic realm=\"/\", charset=\"UTF-8\"");
+      response.header("WWW-Authenticate", "Bearer");
       halt(401);
     }
   }

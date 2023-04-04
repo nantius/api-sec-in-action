@@ -1,9 +1,12 @@
+com/manning/apisecurityinaction/token/HmacTokenStore.class
 com/manning/apisecurityinaction/controller/TokenController.class
 com/manning/apisecurityinaction/Main.class
 com/manning/apisecurityinaction/token/Base64url.class
 com/manning/apisecurityinaction/token/CookieTokenStore.class
+com/manning/apisecurityinaction/CorsFilter.class
 com/manning/apisecurityinaction/controller/AuditController.class
 com/manning/apisecurityinaction/token/TokenStore.class
 com/manning/apisecurityinaction/controller/UserController.class
+com/manning/apisecurityinaction/token/DatabaseTokenStore.class
 com/manning/apisecurityinaction/controller/SpaceController.class
 com/manning/apisecurityinaction/token/TokenStore$Token.class
